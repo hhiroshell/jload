@@ -20,8 +20,8 @@ bootJar {
     archiveFileName = 'jload.jar'
 }
 
-sourceCompatibility = 1.11
-targetCompatibility = 1.11
+sourceCompatibility = 1.17
+targetCompatibility = 1.17
 
 repositories {
     mavenCentral()
@@ -37,4 +37,18 @@ dependencies {
 
 ext {
     set('snakeyaml.version','1.32') // override the version spring-boot 2.7.5 depends on to avoid vulnerabilities
+}
+
+task getDeps(type: Copy) {
+    from sourceSets.main.runtimeClasspath
+    into 'runtime/'
+
+    doFirst {
+        ant.delete(dir: 'runtime')
+        ant.mkdir(dir: 'runtime')
+    }
+
+    doLast {
+        ant.delete(dir: 'runtime')
+    }
 }
