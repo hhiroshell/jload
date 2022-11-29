@@ -1,8 +1,7 @@
 package com.github.hhiroshell.jload.application;
 
 import com.github.hhiroshell.jload.lemming.Lemming;
-import com.github.hhiroshell.jload.lemming.LemmingFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,9 +25,6 @@ public class JloadController {
     @Value("${number_of_lemmings}")
     private int defaultNumberOfLemmings;
 
-    @Autowired
-    private LemmingFactory lemmingFactory;
-
     /**
      * Return cowsay's 'say' message.
      *
@@ -40,10 +36,10 @@ public class JloadController {
 
         List<Lemming> lemmings = new ArrayList<>(n){};
         for (int i = 0; i < n; i++) {
-            lemmings.add(lemmingFactory.generate("hoge"));
+            lemmings.add(new Lemming(RandomStringUtils.randomAscii(1, 25)));
         }
 
-        return lemmings.stream().sorted(comparing(l -> l.getId())).collect(Collectors.toList());
+        return lemmings.stream().sorted(comparing(l -> l.getName())).collect(Collectors.toList());
     }
 
     /**
