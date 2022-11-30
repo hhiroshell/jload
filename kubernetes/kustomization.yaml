@@ -1,0 +1,63 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- deployment.yaml
+- namespace.yaml
+- service.yaml
+
+namespace: jload
+
+commonLabels:
+  app: jload
+
+images:
+- name: jload
+  newName: ghcr.io/hhiroshell/jload
+  newTag: v0.0.1-rc2
+
+replicas:
+- name: jload
+  count: 3
+
+configMapGenerator:
+- name: &name jload-warmup
+  files:
+  - warmup.sh
+  options:
+    labels:
+      realname-diff/realname: *name
+      prunable: "true"
+
+patches:
+- |
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: jload
+  spec:
+    template:
+      spec:
+        containers:
+        - name: jload
+          volumeMounts:
+          - name: warmup
+            mountPath: /var/scripts
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                - sh
+                - -c
+                - |-
+                  sleep 30
+
+                  for i in $(seq 4); do
+                      /var/scripts/warmup.sh 2500 &
+                  done
+                  wait
+        volumes:
+        - name: warmup
+          configMap:
+            name: jload-warmup
+            defaultMode: 0447

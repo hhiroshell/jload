@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jload
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jload
+  template:
+    metadata:
+      labels:
+        app: jload
+    spec:
+      containers:
+      - name: jload
+        image: jload
+        ports:
+        - name: http
+          containerPort: 8080
+        env:
+        - name: JAVA_OPTS
+          value: "-XX:MaxRAMPercentage=50.0 -XX:MaxMetaspaceSize=128M -XX:MaxDirectMemorySize=10M -XX:+ExitOnOutOfMemoryError"
+        resources:
+          limits:
+            cpu: 0.4
+            memory: 512M
+          requests:
+            cpu: 0.2
+            memory: 256M
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: http
+          periodSeconds: 1
+          failureThreshold: 3
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - sh
+              - -c
+              - |-
+                sleep 5
+        imagePullPolicy: IfNotPresent
